@@ -4,6 +4,7 @@ from functools import reduce
 from math import sqrt
 from collections import deque
 from typing import Optional
+from queue import SimpleQueue
 
 import recorder
 import config
@@ -13,7 +14,8 @@ def is_human_talking(threshold: int, window: deque) -> bool:
     return reduce(operator.add, map(lambda x: x > threshold, window)) > 0
 
 
-def listen_for_sentences(max_num_sentences: Optional[int] = None) -> None:
+def listen_for_sentences(max_num_sentences: Optional[int] = None,
+                         queue: SimpleQueue = None) -> None:
     audio_configs = config.get_pyaudio_config()
     save_location = config.get_save_location()
     # open pyaudio record session
@@ -44,8 +46,11 @@ def listen_for_sentences(max_num_sentences: Optional[int] = None) -> None:
 
             # stop when no one is speaking
             sentence[lead_in_capacity-len(lead_in):lead_in_capacity] = lead_in
-            filename = save_data(sentence, audio_configs, save_location)
-            print(f"Sentence saved to {filename}. Listening..")
+            file_path = save_data(sentence, audio_configs, save_location)
+            queue.put_nowait(file_path)
+            print(f"Saved to {file_path}. Listening..")
+            if queue:
+                print(f"Queue size {queue.qsize()}")
             num_sentences += 1
             if max_num_sentences and num_sentences >= max_num_sentences:
                 break
@@ -58,4 +63,5 @@ def listen_for_sentences(max_num_sentences: Optional[int] = None) -> None:
 
 
 if __name__ == "__main__":
-    listen_for_sentences()
+    q = SimpleQueue()
+    listen_for_sentences(queue=q)
