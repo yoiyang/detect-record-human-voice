@@ -49,7 +49,6 @@ def listen_for_sentences(max_num_sentences: Optional[int] = None,
             # stop when no one is speaking
             sentence[lead_in_capacity-len(lead_in):lead_in_capacity] = lead_in
             file_path = save_data(sentence, audio_configs, save_location)
-            print(f"Saved to {file_path}\nListening..")
             if queue:
                 queue.put_nowait(file_path)
             num_sentences += 1
