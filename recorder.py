@@ -22,8 +22,6 @@ def new_stream(*args, **kwds) -> Tuple[pyaudio.Stream, Callable]:
 
             return file_path
 
-        raise RuntimeError(f'Fail to store {file_path}')
-
     yield stream, save_data
     stream.close()
     p.terminate()
